@@ -217,14 +217,22 @@ class XueQiuTrader(WebTrader):
         :param owner:
         :return:
         """
-        data = {
-            "cube_symbol": str(self.account_config['portfolio_code']),
-            'count': 5,
-            'page': 1
-        }
-        r = self.session.get(self.config['history_url'], params=data)
-        r = json.loads(r.text)
-        return r['list']
+        i = 1
+        a = []
+        while True:
+            data = {
+                "cube_symbol": str(self.account_config['portfolio_code']),
+                'count': 50,
+                'page': i
+            }
+            r = self.session.get(self.config['history_url'], params=data)
+            r = json.loads(r.text) 
+            
+            a.extend(r['list'])
+            if i*50 > int(r['totalCount']):
+                break;
+            i += 1
+        return a
 
     @property
     def history(self):
