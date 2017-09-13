@@ -6,10 +6,18 @@ import time
 from numbers import Number
 
 import requests
+import shutil
+#from urlparse import urlparse
 
 from .log import log
 from .webtrader import NotLoginError, TradeError
 from .webtrader import WebTrader
+
+from matplotlib import pyplot as plt
+from PIL import Image
+
+UID = "191505195949401"
+devideID = "2caec7b60c2cd8c108942f835508d051"
 
 
 class XueQiuTrader(WebTrader):
@@ -49,7 +57,7 @@ class XueQiuTrader(WebTrader):
         """
         self.login()
 
-    def login(self, throw=False):
+    def login(self,,throw=False):
         """
         登录
         :param throw:
@@ -58,7 +66,7 @@ class XueQiuTrader(WebTrader):
         login_status, result = self.post_login_data()
         if login_status is False and throw:
             raise NotLoginError(result)
-        log.debug('login status: %s' % result)
+
         return login_status
 
     def _prepare_account(self, user='', password='', **kwargs):
@@ -91,8 +99,28 @@ class XueQiuTrader(WebTrader):
             'areacode': '86',
             'telephone': self.account_config['account'],
             'remember_me': '0',
-            'password': self.account_config['password']
+            'password': self.account_config['password'],
         }
+        login_response = self.session.post(self.config['login_api'], data=login_post_data)
+        #login_status = login_response.json()
+        #if 'error_description' in login_status:
+        #    return False, login_status['error_description']
+
+        #u = urlparse('https://xueqiu.com/')
+        c = requests.cookies.RequestsCookieJar()
+        c.set('u', UID, path='/', domain='xueqiu.com')
+        c.set('device_id', devideID, path='/', domain='xueqiu.com')
+        self.session.cookies.update(c)
+        self.session.get('https://xueqiu.com/service/captcha/sid/id')
+        resp = self.session.get('https://xueqiu.com/service/captcha/image', stream=True)
+        with open('/tmp/captcha.jpg', 'wb') as out_file:
+            shutil.copyfileobj(resp.raw, out_file)
+        img = Image.open('/tmp/captcha.jpg')
+        plt.figure("captcha")
+        plt.imshow(img)
+        plt.axis('off')
+        plt.show()
+        login_post_data['captcha'] = raw_input('please input the captcha:')
         login_response = self.session.post(self.config['login_api'], data=login_post_data)
         login_status = login_response.json()
         if 'error_description' in login_status:
