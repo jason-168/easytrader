@@ -57,7 +57,7 @@ class XueQiuTrader(WebTrader):
         """
         self.login()
 
-    def login(self,,throw=False):
+    def login(self,throw=False):
         """
         登录
         :param throw:
