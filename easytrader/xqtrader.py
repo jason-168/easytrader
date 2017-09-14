@@ -104,7 +104,7 @@ class XueQiuTrader(WebTrader):
         login_response = self.session.post(self.config['login_api'], data=login_post_data)
         login_status = login_response.json()
         if 'error_description' not in login_status:
-            True, "SUCCESS"
+            return True, "SUCCESS"
         # return False, login_status['error_description']
 
         #u = urlparse('https://xueqiu.com/')
